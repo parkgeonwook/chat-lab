@@ -131,8 +131,8 @@ h2 {
 
 .chat-panel {
 	display: grid;
-	grid-template-rows: auto 1fr auto;
-	min-height: 720px;
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	height: min(720px, calc(100vh - 80px));
 	padding: 20px;
 	gap: 20px;
 }
@@ -145,17 +145,26 @@ h2 {
 	border-bottom: 1px solid #ebedf0;
 }
 
+.conversation-panel {
+	display: grid;
+	grid-template-rows: minmax(0, 1fr) auto auto;
+	min-height: 0;
+	height: 100%;
+	padding: 8px 0;
+	overflow: hidden;
+}
+
 .message-list {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
 	padding: 8px 4px;
-	min-height: 320px;
+	min-height: 0;
 	overflow-y: auto;
 }
 
 .empty-state {
-	margin: 0;
+	margin: 12px 0 0;
 	padding: 32px 16px;
 	border: 1px dashed var(--panel-border);
 	border-radius: 8px;
@@ -165,7 +174,7 @@ h2 {
 }
 
 .status-message {
-	margin: 0;
+	margin: 12px 0 0;
 	padding: 12px 14px;
 	border-radius: 8px;
 	background: #eef2ff;
@@ -232,8 +241,12 @@ h2 {
 	}
 
 	.chat-panel {
-		min-height: calc(100vh - 32px);
+		height: calc(100vh - 32px);
 		padding: 16px;
+	}
+
+	.conversation-panel {
+		min-height: 0;
 	}
 
 	.chat-header {

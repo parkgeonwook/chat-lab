@@ -32,4 +32,12 @@ class ChatPageTest {
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("sockjs.min.js")))
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("stomp.min.js")));
 	}
+
+	@Test
+	void indexPageIncludesConversationPanelWrapper() throws Exception {
+		mockMvc.perform(get("/index.html"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("conversation-panel")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("composer-form")));
+	}
 }
