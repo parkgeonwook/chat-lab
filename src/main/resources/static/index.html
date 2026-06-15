@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>chat-lap</title>
+	<link rel="stylesheet" href="/chat.css">
+</head>
+<body>
+	<div class="app-shell">
+		<section class="start-panel" id="start-panel">
+			<div class="panel-header">
+				<p class="eyebrow">chat-lap</p>
+				<h1>&#xCC44;&#xD305; &#xC2DC;&#xC791;</h1>
+				<p class="subtext">&#xB0B4; &#xC774;&#xB984;&#xACFC; &#xC0C1;&#xB300; &#xC774;&#xB984;&#xC744; &#xC785;&#xB825;&#xD558;&#xACE0; 1:1 &#xB300;&#xD654;&#xB97C; &#xC2DC;&#xC791;&#xD569;&#xB2C8;&#xB2E4;.</p>
+			</div>
+
+			<form class="start-form" id="start-form">
+				<label class="field">
+					<span>&#xB0B4; &#xC774;&#xB984;</span>
+					<input id="my-name" name="myName" type="text" placeholder="userB" value="userB" required>
+				</label>
+
+				<label class="field">
+					<span>&#xC0C1;&#xB300; &#xC774;&#xB984;</span>
+					<input id="partner-name" name="partnerName" type="text" placeholder="userA" value="userA" required>
+				</label>
+
+				<button class="primary-button" type="submit">&#xCC44;&#xD305; &#xC2DC;&#xC791;</button>
+			</form>
+		</section>
+
+		<section class="chat-panel is-hidden" id="chat-panel">
+			<header class="chat-header">
+				<div>
+					<p class="eyebrow">1:1 chat</p>
+					<h2 id="chat-title">userA&#xC640;&#xC758; &#xB300;&#xD654;</h2>
+				</div>
+				<button class="secondary-button" id="restart-button" type="button">&#xB2E4;&#xC2DC; &#xC785;&#xB825;</button>
+			</header>
+
+			<main class="message-list" id="message-list" aria-live="polite"></main>
+			<p class="empty-state" id="empty-state">&#xC544;&#xC9C1; &#xB300;&#xD654;&#xAC00; &#xC5C6;&#xC2B5;&#xB2C8;&#xB2E4;.</p>
+
+			<form class="composer" id="composer-form">
+				<input id="message-input" type="text" placeholder="&#xBA54;&#xC2DC;&#xC9C0;&#xB97C; &#xC785;&#xB825;&#xD558;&#xC138;&#xC694;" autocomplete="off">
+				<button class="primary-button" type="submit">&#xC804;&#xC1A1;</button>
+			</form>
+			<p class="composer-note">&#xC9C0;&#xAE08;&#xC740; UI &#xD2C0;&#xB9CC; &#xC900;&#xBE44;&#xB41C; &#xC0C1;&#xD0DC;&#xC785;&#xB2C8;&#xB2E4;. &#xB2E4;&#xC74C; &#xB2E8;&#xACC4;&#xC5D0;&#xC11C; REST&#xC640; WebSocket&#xC744; &#xC5F0;&#xACB0;&#xD569;&#xB2C8;&#xB2E4;.</p>
+		</section>
+	</div>
+
+	<script src="/chat.js"></script>
+</body>
+</html>
