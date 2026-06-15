@@ -13,6 +13,7 @@ const statusMessage = document.getElementById("status-message");
 
 let currentUser = "";
 let partnerUser = "";
+let stompClient = null;
 
 function escapeHtml(value) {
 	return value
@@ -46,6 +47,25 @@ function renderMessages(messages) {
 	messageList.scrollTop = messageList.scrollHeight;
 }
 
+function appendMessage(message) {
+	emptyState.classList.add("is-hidden");
+
+	const isMe = message.sender === currentUser;
+	const row = document.createElement("div");
+	row.className = `message-row ${isMe ? "is-me" : "is-other"}`;
+
+	const bubble = document.createElement("article");
+	bubble.className = "message-bubble";
+	bubble.innerHTML = `
+		<div class="message-meta">${escapeHtml(message.sender)}</div>
+		<div>${escapeHtml(message.content)}</div>
+	`;
+
+	row.appendChild(bubble);
+	messageList.appendChild(row);
+	messageList.scrollTop = messageList.scrollHeight;
+}
+
 function setStatusMessage(message) {
 	statusMessage.textContent = message;
 	statusMessage.classList.toggle("is-hidden", !message);
@@ -66,24 +86,26 @@ async function fetchConversation() {
 	return response.json();
 }
 
-async function saveMessage(content) {
-	const response = await fetch("/api/messages", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({
-			sender: currentUser,
-			receiver: partnerUser,
-			content
-		})
-	});
-
-	if (!response.ok) {
-		throw new Error(`message save failed: ${response.status}`);
+function connectWebSocket() {
+	if (stompClient?.connected) {
+		return;
 	}
 
-	return response.json();
+	const socket = new SockJS("/ws");
+	stompClient = Stomp.over(socket);
+	stompClient.debug = () => {};
+
+	stompClient.connect({}, () => {
+		subscribeToMyQueue();
+		setStatusMessage("");
+	});
+}
+
+function subscribeToMyQueue() {
+	stompClient.subscribe(`/queue/messages/${currentUser}`, (messageFrame) => {
+		const message = JSON.parse(messageFrame.body);
+		appendMessage(message);
+	});
 }
 
 async function openChatScreen() {
@@ -96,7 +118,8 @@ async function openChatScreen() {
 	try {
 		const messages = await fetchConversation();
 		renderMessages(messages);
-		setStatusMessage("");
+		setStatusMessage("\uC2E4\uC2DC\uAC04 \uC5F0\uACB0 \uC900\uBE44 \uC911\uC785\uB2C8\uB2E4.");
+		connectWebSocket();
 	} catch (error) {
 		console.error(error);
 		setStatusMessage("\uC774\uC804 \uB300\uD654\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.");
@@ -106,6 +129,11 @@ async function openChatScreen() {
 }
 
 function resetChat() {
+	if (stompClient?.connected) {
+		stompClient.disconnect(() => {});
+	}
+
+	stompClient = null;
 	chatPanel.classList.add("is-hidden");
 	startPanel.classList.remove("is-hidden");
 	messageList.innerHTML = "";
@@ -131,24 +159,20 @@ composerForm.addEventListener("submit", (event) => {
 	event.preventDefault();
 	const content = messageInput.value.trim();
 
-	if (!content) {
+	if (!content || !stompClient?.connected) {
 		return;
 	}
 
-	setStatusMessage("\uBA54\uC2DC\uC9C0\uB97C \uC800\uC7A5\uD558\uB294 \uC911\uC785\uB2C8\uB2E4.");
+	const message = {
+		sender: currentUser,
+		receiver: partnerUser,
+		content
+	};
 
-	saveMessage(content)
-		.then(() => fetchConversation())
-		.then((messages) => {
-			renderMessages(messages);
-			setStatusMessage("");
-			messageInput.value = "";
-			messageInput.focus();
-		})
-		.catch((error) => {
-			console.error(error);
-			setStatusMessage("\uBA54\uC2DC\uC9C0 \uC800\uC7A5\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4.");
-		});
+	stompClient.send("/app/chat/send", {}, JSON.stringify(message));
+	appendMessage(message);
+	messageInput.value = "";
+	messageInput.focus();
 });
 
 restartButton.addEventListener("click", () => {

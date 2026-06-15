@@ -1,6 +1,7 @@
 package com.example.chatlap.ui;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,5 +23,13 @@ class ChatPageTest {
 		mockMvc.perform(get("/"))
 			.andExpect(status().isOk())
 			.andExpect(forwardedUrl("index.html"));
+	}
+
+	@Test
+	void indexPageIncludesWebSocketLibraries() throws Exception {
+		mockMvc.perform(get("/index.html"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("sockjs.min.js")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("stomp.min.js")));
 	}
 }
