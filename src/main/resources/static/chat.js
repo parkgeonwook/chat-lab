@@ -9,6 +9,7 @@ const messageInput = document.getElementById("message-input");
 const messageList = document.getElementById("message-list");
 const chatTitle = document.getElementById("chat-title");
 const emptyState = document.getElementById("empty-state");
+const statusMessage = document.getElementById("status-message");
 
 let currentUser = "";
 let partnerUser = "";
@@ -45,11 +46,62 @@ function renderMessages(messages) {
 	messageList.scrollTop = messageList.scrollHeight;
 }
 
-function openChatScreen() {
+function setStatusMessage(message) {
+	statusMessage.textContent = message;
+	statusMessage.classList.toggle("is-hidden", !message);
+}
+
+async function fetchConversation() {
+	const params = new URLSearchParams({
+		currentUser,
+		partnerUser
+	});
+
+	const response = await fetch(`/api/messages/conversation?${params.toString()}`);
+
+	if (!response.ok) {
+		throw new Error(`conversation request failed: ${response.status}`);
+	}
+
+	return response.json();
+}
+
+async function saveMessage(content) {
+	const response = await fetch("/api/messages", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({
+			sender: currentUser,
+			receiver: partnerUser,
+			content
+		})
+	});
+
+	if (!response.ok) {
+		throw new Error(`message save failed: ${response.status}`);
+	}
+
+	return response.json();
+}
+
+async function openChatScreen() {
 	startPanel.classList.add("is-hidden");
 	chatPanel.classList.remove("is-hidden");
 	chatTitle.textContent = `${partnerUser}\uC640\uC758 \uB300\uD654`;
+	setStatusMessage("\uC774\uC804 \uB300\uD654\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4.");
 	renderMessages([]);
+
+	try {
+		const messages = await fetchConversation();
+		renderMessages(messages);
+		setStatusMessage("");
+	} catch (error) {
+		console.error(error);
+		setStatusMessage("\uC774\uC804 \uB300\uD654\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.");
+	}
+
 	messageInput.focus();
 }
 
@@ -58,6 +110,7 @@ function resetChat() {
 	startPanel.classList.remove("is-hidden");
 	messageList.innerHTML = "";
 	messageInput.value = "";
+	setStatusMessage("");
 	myNameInput.focus();
 }
 
@@ -82,8 +135,20 @@ composerForm.addEventListener("submit", (event) => {
 		return;
 	}
 
-	messageInput.value = "";
-	messageInput.focus();
+	setStatusMessage("\uBA54\uC2DC\uC9C0\uB97C \uC800\uC7A5\uD558\uB294 \uC911\uC785\uB2C8\uB2E4.");
+
+	saveMessage(content)
+		.then(() => fetchConversation())
+		.then((messages) => {
+			renderMessages(messages);
+			setStatusMessage("");
+			messageInput.value = "";
+			messageInput.focus();
+		})
+		.catch((error) => {
+			console.error(error);
+			setStatusMessage("\uBA54\uC2DC\uC9C0 \uC800\uC7A5\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4.");
+		});
 });
 
 restartButton.addEventListener("click", () => {
